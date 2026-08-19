@@ -1,0 +1,102 @@
+class Solution {
+    public double findMedianSortedArrays(int[] nums1, int[] nums2) {
+        // this is a very very imporant question -> median of two sorted arrays
+        // here we can solve in optimal way using Bs on answers type 
+
+        // brute was like merginng two arays and finding median but -> tLE will come so
+        // we do this via bs
+
+        int n1 = nums1.length;
+        int n2 = nums2.length;
+
+        // in this question we have to take the range -> basically the length of the lowest array elements
+        // here the range represets , how many number of elnments we can tkae from the arra1 after spkiting into half so divinf will say how many i should take from array1 and array 2 followng its result 
+
+         // VERY IMPORTANT OPTIMIZATION: Always ensure array1 is the shorter array.
+        // This ensures the binary search works on the smaller range (0 to n1),
+        // keeping the runtime at the optimal O(log(min(N1, N2))) to pass OA filters.
+        if(n1 > n2){
+            return findMedianSortedArrays(nums2,nums1);
+        }
+
+        int low = 0;
+        int high = n1;
+        // very very imporatnt step :  That + 1 in the formula (n1 + n2 + 1) / 2 is a deliberate design choice that handles odd total lengths without requiring extra if-else branches.By adding 1, we ensure that if the total number of elements is odd, the extra middle element always lands on the left partition 
+
+         // This is the size of the combined left basket.
+        // For example, if total elements = 10, totalLeftElements will be 5.
+        int total_no_of_elements = (n1 + n2 + 1) / 2;
+
+        while(low <= high){
+            // mid represents how many elements we pick from the left side of array1
+            int mid = low + (high - low) / 2;
+
+            // The remaining elements needed to fill our left basket must come from array2
+            int array_2_elements = total_no_of_elements - mid;
+
+              // ISOLATING THE 4 CRITICAL BOUNDARY ELEMENTS:
+            // We fetch l1 and l2 (highest on left side) and r1 and r2 (lowest on right side).
+            // We use edge-case guards (Integer.MIN_VALUE / MAX_VALUE) if a cut falls outside array bounds.
+
+            // 1. LEFT HALF BOUNDARY CHECKPOINTS (Highest elements on the left side)
+            int l1 = 0;
+            if (mid == 0) {
+                // If we picked 0 elements from array1, nothing is on its left side.
+                l1 = Integer.MIN_VALUE; 
+            } else {
+                l1 = nums1[mid - 1];
+            }
+
+            int l2 = 0;
+            if (array_2_elements == 0) {
+                // If we picked 0 elements from array2, nothing is on its left side.
+                l2 = Integer.MIN_VALUE;
+            } else {
+                l2 = nums2[array_2_elements - 1];
+            }
+
+
+            // 2. RIGHT HALF BOUNDARY CHECKPOINTS (Lowest elements on the right side)
+            int r1 = 0;
+            if (mid == n1) {
+                // If we picked all elements from array1, nothing is left on its right side.
+                r1 = Integer.MAX_VALUE;
+            } else {
+                r1 = nums1[mid];
+            }
+
+            int r2 = 0;
+            if (array_2_elements == n2) {
+                // If we picked all elements from array2, nothing is left on its right side.
+                r2 = Integer.MAX_VALUE;
+            } else {
+                r2 = nums2[array_2_elements];
+            }
+
+             // THE CROSS-COMPARISON VALIDATION CHECK:
+            // Verify if the combined left half is completely smaller than the right half.
+
+            // main steps : we now cross checking and compaing thier boindaires in a crpss way
+            if(l1 <= r2  && l2 <= r1){
+                // find out wheether the length is odd or even and acording to that calculate the median
+                // MEDIAN FORMULA CALCULATION PASS:
+                // If the total combined elements count is odd, return the maximum of the left side.
+                if((n1+n2) % 2 != 0 ){
+                    return Math.max(l1,l2);
+                }
+                else{
+                    return (Math.max(l1,l2) + Math.min(r1,r2)) / 2.0;
+                }
+            }
+            else if(l1 > r2){   // here l1 is grater than r2 whihc is booger and erong because our left sidemust be less thn right half value so
+            // Too many elements taken from array1 left side; contract our search space left
+                high = mid - 1;
+            }
+            else{   // this case hppens because l2 is greather than r1
+                 // Too few elements taken from array1 left side; expand our search space right
+                low = mid + 1;
+            }
+        }
+        return 0.0;
+    }
+}
